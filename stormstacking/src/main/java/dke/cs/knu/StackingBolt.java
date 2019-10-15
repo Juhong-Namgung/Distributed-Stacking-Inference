@@ -19,7 +19,8 @@ public class StackingBolt extends BaseRichBolt {
 
     private float[][] urlTensor = new float[1][21];
     private String modelPath;       // Deep Learning Model Path
-    private PreProcessor printable;    //
+    private PreProcessor printable;
+    private float[][] result_v = new float[1][1];
 
     public StackingBolt(String path) {
         this.modelPath = path;
@@ -44,20 +45,70 @@ public class StackingBolt extends BaseRichBolt {
 
             Session sess = b.session();
 
+            float[][] resultLevel0 = new float[1][3];
+
             Tensor result = sess.runner()
-                    .feed("main_input", x)
-                    .fetch("main_output/BiasAdd")
+                    .feed("nn1_input", x)
+                    .fetch("nn1_output/BiasAdd")
+                    .run()
+                    .get(0)
+                    ;
+
+            float[][] value = (float[][]) result.copyTo(new float[1][1]);
+            resultLevel0[0][0] = value[0][0];
+
+            System.out.print("NN1 result: ");
+            printTensor(result);
+
+            Tensor result2 = sess.runner()
+                    .feed("nn2_input", x)
+                    .fetch("nn2_output/BiasAdd")
                     .run()
                     .get(0);
 
-            float[][] result_v = (float[][]) result.copyTo(new float[1][1]);
-            //print the result
-            for(int i=0; i<result_v.length;i++)
-                System.out.println(result_v[i][0]);
+            value = (float[][]) result2.copyTo(new float[1][1]);
+            resultLevel0[0][1] = value[0][0];
+
+            System.out.print("NN2 result: ");
+            printTensor(result2);
+
+            Tensor result3 = sess.runner()
+                    .feed("nn3_input", x)
+                    .fetch("nn3_output/BiasAdd")
+                    .run()
+                    .get(0);
+
+            value = (float[][]) result3.copyTo(new float[1][1]);
+            resultLevel0[0][2] = value[0][0];
+
+            System.out.print("NN3 result: ");
+            printTensor(result3);
+
+            System.out.println("Level 0 models result: ");
+            for (int i = 0; i < 3; i++) {
+                System.out.print("[" +resultLevel0[0][i] + "] ");
+            }
+
+            Tensor finalTensor = Tensor.create(resultLevel0);
+            Tensor finalResult = sess.runner()
+                    .feed("final_input", finalTensor)
+                    .fetch("final_output/BiasAdd")
+                    .run()
+                    .get(0);
+            System.out.print("Stacking Final Result: ");
+            printTensor(finalResult);
+
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    }
+
+    public void printTensor(Tensor tensor) {
+        result_v = (float[][]) tensor.copyTo(new float[1][1]);
+        for (int i = 0; i < result_v.length; i++) {
+            System.out.println(result_v[i][0]);
+        }
     }
 }
