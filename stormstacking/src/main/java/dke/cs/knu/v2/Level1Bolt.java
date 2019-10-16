@@ -16,9 +16,8 @@ import org.tensorflow.Tensor;
 import java.util.Map;
 
 public class Level1Bolt extends BaseRichBolt {
-    private static Log LOG = LogFactory.getLog(StackingBolt.class);
+    private static Log LOG = LogFactory.getLog(Level1Bolt.class);
     OutputCollector collector;
-    float[] test = new float[3];
     float[][] level0Result = new float[1][3];
     private String modelPath;       // Deep Learning Model Path
     private float[][] result_v = new float[1][1];

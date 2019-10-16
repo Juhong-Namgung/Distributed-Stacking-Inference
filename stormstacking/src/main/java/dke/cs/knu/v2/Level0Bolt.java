@@ -18,10 +18,10 @@ import org.tensorflow.Tensor;
 import java.util.Map;
 
 public class Level0Bolt extends BaseRichBolt {
-    private static Log LOG = LogFactory.getLog(StackingBolt.class);
+    private static Log LOG = LogFactory.getLog(Level0Bolt.class);
     OutputCollector collector;
 
-    private float[][] urlTensor = new float[1][21];
+    private float[][] inputTensor = new float[1][21];
     private String modelPath;       // Deep Learning Model Path
     private PreProcessor printable;
     private float[][] result_v = new float[1][1];
@@ -38,14 +38,13 @@ public class Level0Bolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple input) {
-        String validURL = (String) input.getValueByField("str");
-        String detectResult;
+        String inputValue = (String) input.getValueByField("str");
 
         try (SavedModelBundle b = SavedModelBundle.load(modelPath, "serve")) {
-            urlTensor = printable.convert(validURL);
+            inputTensor = printable.convert(inputValue);
 
             //create an input Tensor
-            Tensor x = Tensor.create(urlTensor);
+            Tensor x = Tensor.create(inputTensor);
 
             Session sess = b.session();
 
