@@ -1,4 +1,4 @@
-package dke.cs.knu;
+package dke.cs.knu.v1;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

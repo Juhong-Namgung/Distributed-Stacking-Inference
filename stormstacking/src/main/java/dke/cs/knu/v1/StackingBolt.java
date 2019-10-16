@@ -1,21 +1,20 @@
-package dke.cs.knu;
+package dke.cs.knu.v1;
 
+import dke.cs.knu.PreProcessor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichBolt;
-import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
-import org.apache.storm.tuple.Values;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 
 import java.util.Map;
 
-public class Level0Bolt extends BaseRichBolt {
+public class StackingBolt extends BaseRichBolt {
     private static Log LOG = LogFactory.getLog(StackingBolt.class);
     OutputCollector collector;
 
@@ -24,7 +23,7 @@ public class Level0Bolt extends BaseRichBolt {
     private PreProcessor printable;
     private float[][] result_v = new float[1][1];
 
-    public Level0Bolt(String path) {
+    public StackingBolt(String path) {
         this.modelPath = path;
     }
     @Override
@@ -91,22 +90,20 @@ public class Level0Bolt extends BaseRichBolt {
                 System.out.print("[" +resultLevel0[0][i] + "] ");
             }
 
-            collector.emit(new Values(resultLevel0));
-//            Tensor finalTensor = Tensor.create(resultLevel0);
-//            Tensor finalResult = sess.runner()
-//                    .feed("final_input", finalTensor)
-//                    .fetch("final_output/BiasAdd")
-//                    .run()
-//                    .get(0);
-//            System.out.print("Stacking Final Result: ");
-//            printTensor(finalResult);
+            Tensor finalTensor = Tensor.create(resultLevel0);
+            Tensor finalResult = sess.runner()
+                    .feed("final_input", finalTensor)
+                    .fetch("final_output/BiasAdd")
+                    .run()
+                    .get(0);
+            System.out.print("Stacking Final Result: ");
+            printTensor(finalResult);
 
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("level0"));
     }
 
     public void printTensor(Tensor tensor) {
