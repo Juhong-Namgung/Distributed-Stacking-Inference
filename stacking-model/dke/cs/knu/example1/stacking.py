@@ -48,6 +48,7 @@ archive = pd.DataFrame(columns=['models', 'prediction', 'score'])
 for model in [lgb_model, xgb_model, cb_model]:
     models=[]
     prediction = np.zeros(len(x_data))
+    print(prediction.shape)
     for t, v in KFold(5, random_state=0).split(x_data):
         x_train = x_data.iloc[t]
         x_val = x_data.iloc[v]
@@ -79,7 +80,9 @@ y_stack = np.expm1(y_data)
 lr_stacker = LinearRegression() # Second-level model
 ridge_stacker = RidgeCV(alphas=np.logspace(-2, 3))
 lasso_stacker = LassoCV()
-
+print("###################")
+print(x_stack)
+print("###################")
 stack_archive = pd.DataFrame(columns=['models', 'prediction', 'score'])
 for stacker in [lr_stacker, ridge_stacker, lasso_stacker]:
     prediction = np.zeros(len(x_stack))
