@@ -1,5 +1,6 @@
 package dke.cs.knu.v1;
 
+import dke.cs.knu.RandomTupleSpout;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.storm.Config;
@@ -53,6 +54,9 @@ public class MainTopo {
     @Option(name = "--modelPath", aliases = {"--model"} , metaVar = "TENSORFLOW MODEL PATH", usage ="path of deep learning model")
     private static String modelPath = "./models/";
 
+    @Option(name = "--inputSource", aliases = {"source"}, metaVar = "INPUT SOURCE TYPE", usage = "type of input source [spout | kafka]")
+    private static String source = "spout";
+
     public static void main(String[] args) throws NotAliveException, InterruptedException, TException {
         new MainTopo().topoMain(args);
     }
@@ -99,6 +103,7 @@ public class MainTopo {
         props.put("value.serializer", "org.springframework.kafka.support.serializer.JsonSerializer");
 
         KafkaSpout kafkaSpout = new KafkaSpout(kafkaSpoutConfig);
+        RandomTupleSpout randomSpout = new RandomTupleSpout(100);
 
         StackingBolt stackingBolt = new StackingBolt(modelPath);
 
@@ -113,9 +118,15 @@ public class MainTopo {
             parameters.add(Integer.parseInt(p));
         }
 
-        builder.setSpout("kafka-spout", kafkaSpout, parameters.get(0));
-        builder.setBolt("detect-bolt", stackingBolt, parameters.get(1)).shuffleGrouping("kafka-spout");
+        if(source.equals("spout")) {
+            builder.setSpout("random-spout", randomSpout, parameters.get(0));
+            builder.setBolt("detect-bolt", stackingBolt, parameters.get(1)).shuffleGrouping("random-spout");
+        }
 
+        else if(source.equals("kafka")) {
+            builder.setSpout("kafka-spout", kafkaSpout, parameters.get(0));
+            builder.setBolt("detect-bolt", stackingBolt, parameters.get(1)).shuffleGrouping("kafka-spout");
+        }
 
         Config config = new Config();
         config.setNumWorkers(numWorkers);
