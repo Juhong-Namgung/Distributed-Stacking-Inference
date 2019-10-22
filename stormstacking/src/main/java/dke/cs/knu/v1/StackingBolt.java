@@ -7,7 +7,9 @@ import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichBolt;
+import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Values;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
@@ -98,12 +100,16 @@ public class StackingBolt extends BaseRichBolt {
                     .get(0);
             System.out.print("Stacking Final Result: ");
             printTensor(finalResult);
+            value = (float[][]) finalResult.copyTo(new float[1][1]);
 
+            this.collector.emit(input, new Values(String.valueOf(value[0][0])));
+            this.collector.ack(input);
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
+        declarer.declare(new Fields("output"));
     }
 
     public void printTensor(Tensor tensor) {
