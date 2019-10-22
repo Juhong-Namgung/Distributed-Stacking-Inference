@@ -25,10 +25,12 @@ public class ReportBolt extends BaseRichBolt {
     public void execute(Tuple tuple) {
         String result = (String)tuple.getValueByField("output");
         LOG.info("Result: " + result);
-        collector.ack(tuple);
+        this.collector.ack(tuple);
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
     }
 }
+
+

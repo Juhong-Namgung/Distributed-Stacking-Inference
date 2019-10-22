@@ -45,7 +45,7 @@ public class RandomTupleSpout extends BaseRichSpout {
 
     @Override
     public void nextTuple() {
-        this.collector.emit(new Values(inputs[random.nextInt(10)], this.count++));
+        this.collector.emit(new Values(inputs[random.nextInt(10)]), this.count++);
 
         try {
             Thread.sleep(interval);
