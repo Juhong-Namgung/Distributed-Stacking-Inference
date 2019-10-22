@@ -170,26 +170,8 @@ public class PerfTopo {
             throw new IllegalArgumentException("Topology Name must be something");
         }
 
-
-        // submit to local cluster
-//        if (args.length <= 0) {
-//            Config conf = new Config();
-//            LocalCluster cluster = Helper.runOnLocalCluster(TOPOLOGY_NAME, getTopology(conf));
-//
-//            String topologyId = null;
-//            for (TopologySummary t : cluster.getClusterInfo().get_topologies()) {
-//                if (t.get_name().equals(TOPOLOGY_NAME))
-//                    topologyId = t.get_id();
-//            }
-//
-//            Helper.collectLocalMetricsAndKill(cluster, topologyId, 10, 180, conf);
-//            while (true) {//  run indefinitely till Ctrl-C
-//                Thread.sleep(20_000_000);
-//            }
-//        }
         // submit to real cluster
 
-//        Map<String, Object> topoConf = (args.length == 2) ? Utils.findAndReadConfigFile(args[1]) : new Config();
         Map<String, Object> topoConf = Utils.findAndReadConfigFile(configPath);
         topoConf.put(Config.TOPOLOGY_DISABLE_LOADAWARE_MESSAGING, true);
 
@@ -200,44 +182,6 @@ public class PerfTopo {
 
         Helper.runOnClusterAndPrintMetrics((testTime * 60), TOPOLOGY_NAME + "-" + countJob, topoConf, getTopology(topoConf));
 
-			/* Topology Build */
-//        TopologyBuilder builder = new TopologyBuilder();
-//
-//        ArrayList<Integer> parameters = new ArrayList<Integer>();
-//        String[] params = paralleism.split(" ");
-//
-//        for(String p : params) {
-//            parameters.add(Integer.parseInt(p));
-//        }
-//
-//        if(source.equals("spout")) {
-//            builder.setSpout("random-spout", randomSpout, parameters.get(0));
-//            builder.setBolt("detect-bolt", stackingBolt, parameters.get(1)).shuffleGrouping("random-spout");
-//        }
-//
-//        else if(source.equals("kafka")) {
-//            builder.setSpout("kafka-spout", kafkaSpout, parameters.get(0));
-//            builder.setBolt("detect-bolt", stackingBolt, parameters.get(1)).shuffleGrouping("kafka-spout");
-//        }
-//
-//        Config config = new Config();
-//        config.setNumWorkers(numWorkers);
-//
-//        StormSubmitter.submitTopology(topologyName, config, builder.createTopology());
-//
-//        try {
-//            Thread.sleep(testTime * 60 * 1000);
-//
-//            Map<String, Object> conf = Utils.readStormConfig();
-//            Nimbus.Client client = NimbusClient.getConfiguredClient(conf).getClient();
-//            KillOptions killOpts = new KillOptions();
-//            killOpts.set_wait_secs(0);
-//            client.killTopologyWithOpts(topologyName, killOpts);
-//        } catch (AlreadyAliveException ae) {
-//            LOG.info(ae.get_msg());
-//        } catch (InvalidTopologyException ie) {
-//            LOG.info(ie.get_msg());
-//        }
-//    }
+
     }
 }

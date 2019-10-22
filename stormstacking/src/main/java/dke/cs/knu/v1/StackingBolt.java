@@ -24,6 +24,7 @@ public class StackingBolt extends BaseRichBolt {
     private String modelPath;       // Deep Learning Model Path
     private PreProcessor printable;
     private float[][] result_v = new float[1][1];
+    private SavedModelBundle b;
 
     public StackingBolt(String path) {
         this.modelPath = path;
@@ -32,15 +33,14 @@ public class StackingBolt extends BaseRichBolt {
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
         printable = new PreProcessor();
+        b = SavedModelBundle.load(modelPath, "serve");
     }
-
 
     @Override
     public void execute(Tuple input) {
         String validURL = (String) input.getValueByField("str");
-        String detectResult;
 
-        try (SavedModelBundle b = SavedModelBundle.load(modelPath, "serve")) {
+        //try (SavedModelBundle b = SavedModelBundle.load(modelPath, "serve")) {
             urlTensor = printable.convert(validURL);
 
             //create an input Tensor
@@ -60,8 +60,8 @@ public class StackingBolt extends BaseRichBolt {
             float[][] value = (float[][]) result.copyTo(new float[1][1]);
             resultLevel0[0][0] = value[0][0];
 
-            System.out.print("NN1 result: ");
-            printTensor(result);
+//            System.out.print("NN1 result: ");
+//            printTensor(result);
 
             Tensor result2 = sess.runner()
                     .feed("nn2_input", x)
@@ -72,8 +72,8 @@ public class StackingBolt extends BaseRichBolt {
             value = (float[][]) result2.copyTo(new float[1][1]);
             resultLevel0[0][1] = value[0][0];
 
-            System.out.print("NN2 result: ");
-            printTensor(result2);
+//            System.out.print("NN2 result: ");
+//            printTensor(result2);
 
             Tensor result3 = sess.runner()
                     .feed("nn3_input", x)
@@ -84,13 +84,13 @@ public class StackingBolt extends BaseRichBolt {
             value = (float[][]) result3.copyTo(new float[1][1]);
             resultLevel0[0][2] = value[0][0];
 
-            System.out.print("NN3 result: ");
-            printTensor(result3);
+//            System.out.print("NN3 result: ");
+//            printTensor(result3);
 
-            System.out.println("Level 0 models result: ");
-            for (int i = 0; i < 3; i++) {
-                System.out.print("[" +resultLevel0[0][i] + "] ");
-            }
+//            System.out.println("Level 0 models result: ");
+//            for (int i = 0; i < 3; i++) {
+//                System.out.print("[" +resultLevel0[0][i] + "] ");
+//            }
 
             Tensor finalTensor = Tensor.create(resultLevel0);
             Tensor finalResult = sess.runner()
@@ -98,13 +98,14 @@ public class StackingBolt extends BaseRichBolt {
                     .fetch("final_output/BiasAdd")
                     .run()
                     .get(0);
-            System.out.print("Stacking Final Result: ");
-            printTensor(finalResult);
+
+//            System.out.print("Stacking Final Result: ");
+//            printTensor(finalResult);
             value = (float[][]) finalResult.copyTo(new float[1][1]);
 
             this.collector.emit(input, new Values(String.valueOf(value[0][0])));
             this.collector.ack(input);
-        }
+        //}
     }
 
     @Override
