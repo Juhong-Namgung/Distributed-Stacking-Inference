@@ -174,6 +174,8 @@ public class PerfTopo {
 
         Map<String, Object> topoConf = Utils.findAndReadConfigFile(configPath);
         topoConf.put(Config.TOPOLOGY_DISABLE_LOADAWARE_MESSAGING, true);
+        topoConf.put(Config.TOPOLOGY_NAME, topologyName);
+
 
         //  Submit topology to storm cluster
         int countJob = Helper.getInt(topoConf, "topology.count", 1);

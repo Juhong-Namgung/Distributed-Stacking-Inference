@@ -103,7 +103,9 @@ public class StackingBolt extends BaseRichBolt {
 //            printTensor(finalResult);
             value = (float[][]) finalResult.copyTo(new float[1][1]);
 
-            this.collector.emit(input, new Values(String.valueOf(value[0][0])));
+
+//            this.collector.emit(input, new Values(String.valueOf(value[0][0]))); // anchor
+            this.collector.emit(new Values(String.valueOf(value[0][0])));
             this.collector.ack(input);
         //}
     }
