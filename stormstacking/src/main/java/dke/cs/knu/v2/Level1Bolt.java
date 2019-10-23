@@ -27,6 +27,7 @@ public class Level1Bolt extends BaseRichBolt {
     public Level1Bolt(String path) {
         this.modelPath = path;
     }
+
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
@@ -36,29 +37,29 @@ public class Level1Bolt extends BaseRichBolt {
     @Override
     public void execute(Tuple input) {
 //        float[][] level0Result = (float[][])input.getValueByField("level0");
-        float[] test = (float[])input.getValueByField("level0");
+        float[] test = (float[]) input.getValueByField("level0");
         for (int i = 0; i < 3; i++) {
             level0Result[0][i] = test[i];
         }
 
 
-            Session sess = b.session();
+        Session sess = b.session();
 
-            Tensor finalTensor = Tensor.create(level0Result);
-            Tensor finalResult = sess.runner()
-                    .feed("final_input", finalTensor)
-                    .fetch("final_output/BiasAdd")
-                    .run()
-                    .get(0);
+        Tensor finalTensor = Tensor.create(level0Result);
+        Tensor finalResult = sess.runner()
+                .feed("final_input", finalTensor)
+                .fetch("final_output/BiasAdd")
+                .run()
+                .get(0);
         float[][] value = (float[][]) finalResult.copyTo(new float[1][1]);
 
 
-//            this.collector.emit(input, new Values(String.valueOf(value[0][0]))); // anchor
+//        this.collector.emit(input, new Values(String.valueOf(value[0][0]))); // anchor
         this.collector.emit(new Values(String.valueOf(value[0][0])));
         this.collector.ack(input);
 //            System.out.print("Stacking Final Result: ");
 //            printTensor(finalResult);
-        }
+    }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
