@@ -24,6 +24,7 @@ public class Level0_C_ModelBolt extends BaseRichBolt {
     private String modelPath;       // Deep Learning Model Path
     private PreProcessor printable;
     private float[][] result_v = new float[1][1];
+    private SavedModelBundle b;
 
     public Level0_C_ModelBolt(String path) {
         this.modelPath = path;
@@ -32,6 +33,7 @@ public class Level0_C_ModelBolt extends BaseRichBolt {
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
         printable = new PreProcessor();
+        b = SavedModelBundle.load(modelPath, "serve");
     }
 
 
@@ -39,7 +41,6 @@ public class Level0_C_ModelBolt extends BaseRichBolt {
     public void execute(Tuple input) {
         String inputValue = (String) input.getValueByField("input");
 
-        try (SavedModelBundle b = SavedModelBundle.load(modelPath, "serve")) {
             inputTensor = printable.convert(inputValue);
 
             //create an input Tensor
@@ -58,20 +59,9 @@ public class Level0_C_ModelBolt extends BaseRichBolt {
             float[][] value = (float[][]) result3.copyTo(new float[1][1]);
             resultLevel0[0][2] = value[0][0];
 
-            System.out.print("NN3 result: ");
-            printTensor(result3);
-
             collector.emit(new Values(input.getValueByField("level0_a"), input.getValueByField("level0_b"), resultLevel0));
-//            Tensor finalTensor = Tensor.create(resultLevel0);
-//            Tensor finalResult = sess.runner()
-//                    .feed("final_input", finalTensor)
-//                    .fetch("final_output/BiasAdd")
-//                    .run()
-//                    .get(0);
-//            System.out.print("Stacking Final Result: ");
-//            printTensor(finalResult);
+            this.collector.ack(input);
 
-        }
     }
 
     @Override
